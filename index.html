@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Загрузка и Кликер</title>
+<style>
+  /* Общие стили */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body, html {
+    height: 100%;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Экран загрузки */
+  #loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #fff; /* Можно изменить цвет фона */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+
+  #loading-images {
+    width: 80%;
+    max-width: 400px; /* Ограничение по ширине для мобильных */
+    height: auto;
+    margin-bottom: 20px;
+  }
+
+  /* Изображения для загрузки */
+  #loading-images img {
+    width: 100%;
+    height: auto;
+    display: none; /* по умолчанию скрыты */
+  }
+
+  /* Надпись Loading... */
+  #loading-text {
+    font-size: 24px;
+    margin-top: auto; /* чтобы было внизу экрана */
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+
+  /* Главный экран */
+ #main-screen {
+   display: none; /* по умолчанию скрыт */
+   position: relative;
+   width: 100%;
+   height: 100vh; /* весь экран */
+   background-image: url('img/50.jpg'); /* вставьте сюда ваш фон */
+   background-size: cover;
+   background-position: center;
+   display:flex;
+   flex-direction: column;
+   align-items:center;
+   justify-content:center;
+ }
+
+ /* Кнопка-кликер - фиксированная сверху по центру */
+ #clicker-btn {
+   position: fixed;       /* фиксируем позицию относительно окна */
+   top:10px;              /* чуть ниже верхнего края */
+   left:50%;             /* по горизонтали по центру */
+   transform: translateX(-50%); /* смещаем влево на половину ширины для центрирования */
+   
+   cursor:pointer;
+
+   width:auto; 
+   max-width:80%;        /* чтобы не было слишком большим на мобильных */
+   
+   height:auto;
+
+   /* Размер фиксированный для удобства на мобильных устройств */
+   width: 300px;;           /* или другой размер по желанию */
+   height:auto;
+
+   z-index:999;          /* чтобы было поверх всего */
+
+}
+
+/* Медиазапрос для очень маленьких экранов (например, менее 400px) */
+@media(max-width:400px){
+  #clicker-btn {
+     width:50px; 
+     height:auto; 
+ }
+}
+
+/* Счетчик кликов */
+#click-count {
+   margin-top:-10px; /* чуть под кнопкой или можно оставить как есть */
+   font-size:24px;
+   color:#008000; /* зеленый цвет */
+}
+
+/* Маленькая копия изображения при клике */
+.small-copy {
+   position:absolute;
+   width:auto; 
+   max-width:50px; 
+   max-height:50px; 
+   border-radius:5px; 
+   box-shadow:0px 0px 5px rgba(0,0,0,0.3);
+}
+</style>
+</head>
+<body>
+
+<!-- Экран загрузки -->
+<div id="loading-screen">
+ <div id="loading-images">
+   <!-- Вставьте сюда ваши шесть фотографий -->
+   <img src="img/5.jpg" alt="Loading1" />
+   <img src="img/6.jpg" alt="Loading2" />
+   <img src="img/7.jpg" alt="Loading3" />
+   <img src="img/8.jpg" alt="Loading4" />
+   <img src="img/9.jpg" alt="Loading5" />
+   <img src="img/10.jpg" alt="Loading6" />
+ </div>
+ <div id="loading-text">Loading...</div>
+</div>
+
+<!-- Главный экран -->
+<div id="main-screen">
+ <!-- Фон можно заменить через CSS -->
+ <!-- Посередине кнопка-кликер -->
+ <img id="clicker-btn" src="img/42.jpg" alt="Кликер"/>
+ <!-- Счетчик кликов -->
+ <div id="click-count">Клики :0</div>
+</div>
+
+<script>
+/* Скрипт для загрузочного экрана */
+
+const images = document.querySelectorAll('#loading-images img');
+let currentImageIndex = -1;
+
+function showNextImage() {
+ if (images.length ===0) return;
+
+ // скрываем все
+ images.forEach(img => img.style.display='none');
+
+ // увеличиваем индекс
+ currentImageIndex = (currentImageIndex +1) % images.length;
+
+ // показываем текущую
+ images[currentImageIndex].style.display='block';
+}
+
+// Запускаем чередование изображений
+showNextImage(); // показываем первое
+const loaderInterval = setInterval(showNextImage,2000);
+
+// Когда все загружены или через некоторое время — скрываем экран загрузки
+// Для простоты сделаем через фиксированное время (например, через 12 секунд)
+setTimeout(() => {
+ clearInterval(loaderInterval);
+ document.getElementById('loading-screen').style.display='none';
+ document.getElementById('main-screen').style.display='flex';
+},12000); // или можно сделать по событию загрузки изображений
+
+/* Скрипт для главного экрана */
+
+const clicker = document.getElementById('clicker-btn');
+const counterDisplay = document.getElementById('click-count');
+let clickCount =0;
+
+// Обработка клика по кнопке
+clicker.addEventListener('click', () => {
+ clickCount++;
+ counterDisplay.textContent='Клики:' + clickCount;
+
+ // Создаем маленькую копию изображения
+ const clone = clicker.cloneNode(true);
+ clone.className='small-copy';
+
+ // Получаем координаты клика относительно окна
+ const rect = clicker.getBoundingClientRect();
+
+ // Устанавливаем позицию копии чуть ниже и чуть влево от центра изображения
+ clone.style.left=(rect.left+10)+'px';
+ clone.style.top=(rect.top+10)+'px';
+
+ // Добавляем в body
+ document.body.appendChild(clone);
+
+ // Анимация исчезновения копии
+ setTimeout(() => {
+     clone.style.transition='all 1s ease-out';
+     clone.style.transform='translateY(-50px)';
+     clone.style.opacity='0';
+ },10);
+
+ // Удаляем копию через секунду после анимации
+ setTimeout(() => {
+     if(clone.parentNode) clone.parentNode.removeChild(clone);
+ },1100);
+});
+</script>
+
+</body>
+</html>
